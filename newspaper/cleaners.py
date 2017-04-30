@@ -3,8 +3,9 @@
 Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
+
 from .text import innerTrim
-from .utils import ReplaceSequence
+from .utils import ReplaceSequence, get_toremove_list
 
 
 class DocumentCleaner(object):
@@ -15,27 +16,8 @@ class DocumentCleaner(object):
         """
         self.config = config
         self.parser = self.config.get_parser()
-        self.remove_nodes_re = (
-            "^side$|combx|retweet|mediaarticlerelated|menucontainer|"
-            "navbar|storytopbar-bucket|utility-bar|inline-share-tools"
-            "|comment|PopularQuestions|contact|foot|footer|Footer|footnote"
-            "|cnn_strycaptiontxt|cnn_html_slideshow|cnn_strylftcntnt"
-            "|links|meta$|shoutbox|sponsor"
-            "|tags|socialnetworking|socialNetworking|cnnStryHghLght"
-            "|cnn_stryspcvbx|^inset$|pagetools|post-attributes"
-            "|welcome_form|contentTools2|the_answers"
-            "|communitypromo|runaroundLeft|subscribe|vcard|articleheadings"
-            "|^date$|^print$|popup|author-dropdown|tools|socialtools|byline"
-            "|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text"
-            "|legende|ajoutVideo|timestamp|js_replies"
-        )
+        self.toremove = get_toremove_list()
         self.regexp_namespace = "http://exslt.org/regular-expressions"
-        self.naughty_ids_re = (
-            "//*[re:test(@id, '%s', 'i')]" % self.remove_nodes_re)
-        self.naughty_classes_re = (
-            "//*[re:test(@class, '%s', 'i')]" % self.remove_nodes_re)
-        self.naughty_names_re = (
-            "//*[re:test(@name, '%s', 'i')]" % self.remove_nodes_re)
         self.div_to_p_re = r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)"
         self.caption_re = "^caption$"
         self.google_re = " google "
@@ -118,17 +100,9 @@ class DocumentCleaner(object):
 
     def clean_bad_tags(self, doc):
         # ids
-        naughty_list = self.parser.xpath_re(doc, self.naughty_ids_re)
-        for node in naughty_list:
-            self.parser.remove(node)
-        # class
-        naughty_classes = self.parser.xpath_re(doc, self.naughty_classes_re)
-        for node in naughty_classes:
-            self.parser.remove(node)
-        # name
-        naughty_names = self.parser.xpath_re(doc, self.naughty_names_re)
-        for node in naughty_names:
-            self.parser.remove(node)
+        for attr in self.toremove:
+            for node in doc.cssselect('#{attr}, .{attr}, *[name="{attr}"]'.format(attr=attr)):
+                self.parser.remove(node)
         return doc
 
     def remove_nodes_regex(self, doc, pattern):

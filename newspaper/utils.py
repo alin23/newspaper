@@ -330,6 +330,15 @@ def memoize_articles(source, articles):
     return list(cur_articles.values())
 
 
+def get_toremove_list():
+    with open(settings.TOREMOVE, 'r') as f:
+        toremove = f.readlines()
+
+    toremove = [x.strip() for x in toremove if x]
+
+    return toremove
+
+
 def get_useragent():
     """Uses generator to return next useragent in saved file
     """
