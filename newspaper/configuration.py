@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 class Configuration(object):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """
         Modify any of these Article / Source properties
         TODO: Have a seperate ArticleConfig and SourceConfig extend this!
@@ -76,6 +76,8 @@ class Configuration(object):
         # *every* time you build a `Source` object
         # TODO: Actually make this work
         # self.use_cached_categories = True
+        for attr, value in kwargs.items():
+            setattr(self, attr, value)
 
     def get_language(self):
         return self._language
