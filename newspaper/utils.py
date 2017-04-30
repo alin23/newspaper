@@ -10,6 +10,7 @@ __copyright__ = 'Copyright 2014, Lucas Ou-Yang'
 
 import codecs
 import hashlib
+import json
 import logging
 import os
 import pickle
@@ -330,13 +331,13 @@ def memoize_articles(source, articles):
     return list(cur_articles.values())
 
 
-def get_toremove_list():
-    with open(settings.TOREMOVE, 'r') as f:
-        toremove = f.readlines()
+def get_element_block_rules():
+    rules = []
+    for rule_file in os.listdir(settings.ELEMENT_BLOCK_RULES):
+        with open(os.path.join(settings.ELEMENT_BLOCK_RULES, rule_file), 'r') as f:
+            rules += [r.strip()[2:] for r in f.readlines() if r.startswith('##')]
 
-    toremove = [x.strip() for x in toremove if x]
-
-    return toremove
+    return rules
 
 
 def get_useragent():

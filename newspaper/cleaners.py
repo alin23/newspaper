@@ -5,7 +5,7 @@ dom xpath.
 """
 
 from .text import innerTrim
-from .utils import ReplaceSequence, get_toremove_list
+from .utils import ReplaceSequence, get_element_block_rules
 
 
 class DocumentCleaner(object):
@@ -16,7 +16,7 @@ class DocumentCleaner(object):
         """
         self.config = config
         self.parser = self.config.get_parser()
-        self.toremove = get_toremove_list()
+        self.element_block_rules = get_element_block_rules()
         self.regexp_namespace = "http://exslt.org/regular-expressions"
         self.div_to_p_re = r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)"
         self.caption_re = "^caption$"
@@ -100,8 +100,8 @@ class DocumentCleaner(object):
 
     def clean_bad_tags(self, doc):
         # ids
-        for attr in self.toremove:
-            for node in doc.cssselect('#{attr}, .{attr}, *[name="{attr}"]'.format(attr=attr)):
+        for rule in self.element_block_rules:
+            for node in doc.cssselect(rule):
                 self.parser.remove(node)
         return doc
 
