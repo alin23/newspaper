@@ -3,8 +3,8 @@
 Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
-from .utils import ReplaceSequence
 from .text import innerTrim
+from .utils import ReplaceSequence
 
 
 class DocumentCleaner(object):
@@ -25,17 +25,17 @@ class DocumentCleaner(object):
             "|cnn_stryspcvbx|^inset$|pagetools|post-attributes"
             "|welcome_form|contentTools2|the_answers"
             "|communitypromo|runaroundLeft|subscribe|vcard|articleheadings"
-            "|date|^print$|popup|author-dropdown|tools|socialtools|byline"
+            "|^date$|^print$|popup|author-dropdown|tools|socialtools|byline"
             "|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text"
             "|legende|ajoutVideo|timestamp|js_replies"
         )
         self.regexp_namespace = "http://exslt.org/regular-expressions"
-        self.nauthy_ids_re = ("//*[re:test(@id, '%s', 'i')]" %
-                              self.remove_nodes_re)
-        self.nauthy_classes_re = ("//*[re:test(@class, '%s', 'i')]" %
-                                  self.remove_nodes_re)
-        self.nauthy_names_re = ("//*[re:test(@name, '%s', 'i')]" %
-                                self.remove_nodes_re)
+        self.naughty_ids_re = (
+            "//*[re:test(@id, '%s', 'i')]" % self.remove_nodes_re)
+        self.naughty_classes_re = (
+            "//*[re:test(@class, '%s', 'i')]" % self.remove_nodes_re)
+        self.naughty_names_re = (
+            "//*[re:test(@name, '%s', 'i')]" % self.remove_nodes_re)
         self.div_to_p_re = r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)"
         self.caption_re = "^caption$"
         self.google_re = " google "
@@ -118,15 +118,15 @@ class DocumentCleaner(object):
 
     def clean_bad_tags(self, doc):
         # ids
-        naughty_list = self.parser.xpath_re(doc, self.nauthy_ids_re)
+        naughty_list = self.parser.xpath_re(doc, self.naughty_ids_re)
         for node in naughty_list:
             self.parser.remove(node)
         # class
-        naughty_classes = self.parser.xpath_re(doc, self.nauthy_classes_re)
+        naughty_classes = self.parser.xpath_re(doc, self.naughty_classes_re)
         for node in naughty_classes:
             self.parser.remove(node)
         # name
-        naughty_names = self.parser.xpath_re(doc, self.nauthy_names_re)
+        naughty_names = self.parser.xpath_re(doc, self.naughty_names_re)
         for node in naughty_names:
             self.parser.remove(node)
         return doc
@@ -165,7 +165,8 @@ class DocumentCleaner(object):
         kids = self.parser.childNodesWithText(div)
 
         for kid in kids:
-            inline_or_text = self.parser.getTag(kid) in inline_elements or self.parser.isTextNode(kid)
+            inline_or_text = self.parser.getTag(
+                kid) in inline_elements or self.parser.isTextNode(kid)
             is_last_child = kids[-1] == kid
             if inline_or_text:
                 if self.parser.isTextNode(kid):
@@ -173,7 +174,8 @@ class DocumentCleaner(object):
                 nodes_to_wrap.append(kid)
 
             if not inline_or_text or is_last_child:
-                if len(nodes_to_wrap) == 1 and text_node_inside and innerTrim(nodes_to_wrap[0].text) == '':
+                if (len(nodes_to_wrap) == 1 and text_node_inside and
+                        innerTrim(nodes_to_wrap[0].text) == ''):
                     # saving white-space without creating empty <p>
                     self.parser.addprevious(nodes_to_wrap[0], kid)
                     # drop tag, but save text content
@@ -183,7 +185,8 @@ class DocumentCleaner(object):
                     new_paragraph = self.parser.createElement(tag='p')
                     self.parser.addprevious(new_paragraph, kid)
 
-                    # new paragraph will produce line break, should replace <br> tag (at least first occurrence)
+                    # new paragraph will produce line break, should replace <br> tag (at least
+                    # first occurrence)
                     if self.parser.getTag(kid) == 'br':
                         self.parser.drop_tag(kid)
 
