@@ -18,6 +18,7 @@ from html.parser import HTMLParser
 from bs4 import UnicodeDammit
 from copy import deepcopy
 
+from . import exceptions
 from . import text
 
 log = logging.getLogger(__name__)
@@ -59,9 +60,12 @@ class Parser(object):
             return html
         converted = UnicodeDammit(html, is_html=True)
         if not converted.unicode_markup:
-            raise Exception(
+            encodings = [
+                elem[0] for elem in converted.tried_encodings
+            ]
+            raise exceptions.NewspaperUnicodeError(
                 'Failed to detect encoding of article HTML, tried: %s' %
-                ', '.join(converted.tried_encodings))
+                ', '.join(encodings))
         html = converted.unicode_markup
         return html
 
