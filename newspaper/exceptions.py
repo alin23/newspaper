@@ -1,5 +1,5 @@
 class NewspaperError(Exception):
-    -pass
+    pass
 
 
 class NewspaperUnicodeError(NewspaperError):
